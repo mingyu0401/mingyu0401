@@ -11,6 +11,7 @@ const VARIANTS = [
 const PATH_LEN = 250;   // the head walks this many steps, revisiting cells is expected
 const FOOD_COUNT = 125; // randomly chosen from the empty cells the route visited
 const SNAKE_CYAN = '#00b3c4';
+const CYCLE_MS = 21600; // snk default is 13500ms; longer cycle = slower snake
 const PITCH = 16;
 const ROWS = 7;
 const GRID_X0 = 2; // cell rect x; head coord = rect coord - 2
@@ -91,14 +92,16 @@ function randomRoute(cols, checkpoints, rnd) {
 }
 
 // Timed head track: entry from above, one point per step, exit straight down
-// out of the grid after the last cell.
+// out of the grid after the last cell. The track ends 3*step before 100% so
+// the three trailing body segments still fit inside the cycle.
 function buildTrack(cells, step) {
   const track = [{ x: 0, y: -16, t: 0 }];
   cells.forEach(([c, r], k) => track.push({ x: c * PITCH, y: r * PITCH, t: T_FIRST + k * step }));
+  const endT = 100 - 3 * step;
   const last = track[track.length - 1];
   const nExit = Math.ceil((112 - last.y) / PITCH);
   for (let j = 1; j <= nExit; j++)
-    track.push({ x: last.x, y: last.y + j * PITCH, t: last.t + (100 - last.t) * j / nExit });
+    track.push({ x: last.x, y: last.y + j * PITCH, t: last.t + (endT - last.t) * j / nExit });
   return track;
 }
 
@@ -124,15 +127,15 @@ function headKeyframes(corners) {
   return '@keyframes s0{' + corners.map((p) => p.t.toFixed(2) + '%{' + translate(p.x, p.y) + '}').join('') + '}';
 }
 
-// Body segment i replays the head track i*step behind, waiting off-grid at start.
+// Body segment i trails the head by i*step, resting in a row above the grid
+// before it sets off (same as snk's original rendering).
 function segKeyframes(i, corners, step) {
-  let kf = '@keyframes s' + i + '{0%{' + translate(0, -16) + '}';
+  let kf = '@keyframes s' + i + '{0%{' + translate(i * PITCH, -16) + '}';
   for (const p of corners) {
-    const t = p.t - i * step;
-    if (t > 0.01) kf += t.toFixed(2) + '%{' + translate(p.x, p.y) + '}';
+    const t = Math.min(p.t + i * step, 100);
+    kf += t.toFixed(2) + '%{' + translate(p.x, p.y) + '}';
   }
-  const last = corners[corners.length - 1];
-  return kf + '100%{' + translate(last.x, last.y) + '}}';
+  return kf + '}';
 }
 
 function enrich({ file, bright, mid }, rnd) {
@@ -148,6 +151,9 @@ function enrich({ file, bright, mid }, rnd) {
   // Cyan snake: head segments via --cs, body bar follows the same color.
   svg = svg.replace(/--cs:[^;}]+/, '--cs:' + SNAKE_CYAN);
   svg = svg.replace(/(\.u\.u\d+\{)fill:var\(--c4\)/g, '$1fill:var(--cs)');
+
+  // Slower: stretch the snk cycle so the whole walk takes ~1.6x longer.
+  svg = svg.replace(/13500ms/g, CYCLE_MS + 'ms');
 
   // Complete the grid: snk omits not-yet-happened days in the last column.
   const have = new Set([...svg.matchAll(/<rect class="[^"]*" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g)]
