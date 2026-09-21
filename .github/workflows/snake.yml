@@ -27,27 +27,10 @@ jobs:
       - name: Feed the snake (extra green squares)
         run: node scripts/enrich-snake.js dist
 
-      - name: Build snake animation pages
-        run: node scripts/build-snake-page.js dist
-
       - name: Install headless Chromium
         run: |
           npm i playwright-core@1.49.1 --no-fund --no-audit
           npx playwright@1.49.1 install --with-deps chromium
-
-      - name: Render snake GIFs
-        run: |
-          FF=$(ls "$HOME"/.cache/ms-playwright/ffmpeg-*/ffmpeg-linux 2>/dev/null | head -1)
-          if [ -z "$FF" ] || ! "$FF" -hide_banner -filters 2>/dev/null | grep -q palettegen; then
-            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-            FF=ffmpeg
-          fi
-          node scripts/render-snake.js dist/snake-light.html frames-light 10 32 2
-          node scripts/render-snake.js dist/snake-dark.html frames-dark 10 32 2
-          "$FF" -y -framerate 10 -i frames-light/frame-%04d.png -vf "scale=880:192:flags=lanczos,palettegen=max_colors=256:stats_mode=diff" palette-light.png
-          "$FF" -y -framerate 10 -i frames-light/frame-%04d.png -i palette-light.png -lavfi "scale=880:192:flags=lanczos,paletteuse=dither=sierra2_4a:diff_mode=rectangle" -loop 0 dist/snake.gif
-          "$FF" -y -framerate 10 -i frames-dark/frame-%04d.png -vf "scale=880:192:flags=lanczos,palettegen=max_colors=256:stats_mode=diff" palette-dark.png
-          "$FF" -y -framerate 10 -i frames-dark/frame-%04d.png -i palette-dark.png -lavfi "scale=880:192:flags=lanczos,paletteuse=dither=sierra2_4a:diff_mode=rectangle" -loop 0 dist/snake-dark.gif
 
       - name: Build and render banner GIF
         run: |
