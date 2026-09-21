@@ -55,7 +55,9 @@ function replaceKeyframes(svg, name, text) {
 // Random walk over the grid (col,row). Contribution cells are mandatory
 // checkpoints: the walk heads toward each one (mostly greedily, sometimes
 // randomly) so the snake still eats all of its own data cells, then keeps
-// wandering randomly until PATH_LEN steps. Cells may be revisited.
+// wandering randomly until PATH_LEN steps. Cells may be revisited, but the
+// walk never reverses into the cell it just came from — a snake can only go
+// forward, left or right, never straight into its own body.
 function randomRoute(cols, checkpoints, rnd) {
   const cells = [[0, 0]];
   let cur = [0, 0];
@@ -67,21 +69,26 @@ function randomRoute(cols, checkpoints, rnd) {
     if (y < ROWS - 1) out.push([x, y + 1]);
     return out;
   };
+  const noBack = (opts) => {
+    const prev = cells[cells.length - 2];
+    if (!prev) return opts;
+    const f = opts.filter(([x, y]) => !(x === prev[0] && y === prev[1]));
+    return f.length ? f : opts;
+  };
   const dist = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
   const seen = new Set(['0,0']);
   for (const goal of checkpoints) {
+    let guard = 0;
     while (cur[0] !== goal[0] || cur[1] !== goal[1]) {
-      const opts = neighbors(cur[0], cur[1]).sort((a, b) => dist(a, goal) - dist(b, goal) || rnd() - 0.5);
-      cur = rnd() < 0.8 ? opts[0] : opts[Math.floor(rnd() * opts.length)];
+      const opts = noBack(neighbors(cur[0], cur[1])).sort((a, b) => dist(a, goal) - dist(b, goal) || rnd() - 0.5);
+      cur = (guard > 30 || rnd() < 0.8) ? opts[0] : opts[Math.floor(rnd() * opts.length)];
       cells.push(cur);
       seen.add(cur.join(','));
+      guard++;
     }
   }
   while (cells.length < PATH_LEN) {
-    const prev = cells[cells.length - 2];
-    let opts = neighbors(cur[0], cur[1]);
-    const fwd = opts.filter(([x, y]) => !(x === prev[0] && y === prev[1]));
-    if (fwd.length) opts = fwd; // avoid immediate back-and-forth while wandering
+    const opts = noBack(neighbors(cur[0], cur[1]));
     const fresh = opts.filter(([x, y]) => !seen.has(x + ',' + y));
     const pool = fresh.length && rnd() < 0.85 ? fresh : opts; // explore new ground when possible
     cur = pool[Math.floor(rnd() * pool.length)];
