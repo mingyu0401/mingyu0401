@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Segoe UI',sans-serif">
+  <defs>
+    <radialGradient id="g1" cx="0.15" cy="0.12" r="0.55">
+      <stop offset="0" stop-color="#f9a86c" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#f9a86c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="0.85" cy="0.22" r="0.6">
+      <stop offset="0" stop-color="#ff7fa5" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#ff7fa5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g3" cx="0.5" cy="1.1" r="0.7">
+      <stop offset="0" stop-color="#6e82ff" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#6e82ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f9a86c"/>
+      <stop offset="0.33" stop-color="#ff7fa5"/>
+      <stop offset="0.66" stop-color="#6e82ff"/>
+      <stop offset="1" stop-color="#f9a86c"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="0 0;1 0;0 0" dur="7s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="divider" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f9a86c" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ff7fa5"/>
+      <stop offset="1" stop-color="#6e82ff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    
+  <linearGradient id="met0" gradientUnits="userSpaceOnUse" x1="980" y1="80" x2="1070" y2="26">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="0.15" stop-color="#ffffff" stop-opacity="0.95"/>
+    <stop offset="0.55" stop-color="#6e82ff" stop-opacity="0.3"/>
+    <stop offset="1" stop-color="#6e82ff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="met1" gradientUnits="userSpaceOnUse" x1="220" y1="64" x2="130" y2="20">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="0.15" stop-color="#ffffff" stop-opacity="0.95"/>
+    <stop offset="0.55" stop-color="#6e82ff" stop-opacity="0.3"/>
+    <stop offset="1" stop-color="#6e82ff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="met2" gradientUnits="userSpaceOnUse" x1="700" y1="30" x2="790" y2="-14">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="0.15" stop-color="#ffffff" stop-opacity="0.95"/>
+    <stop offset="0.55" stop-color="#6e82ff" stop-opacity="0.3"/>
+    <stop offset="1" stop-color="#6e82ff" stop-opacity="0"/>
+  </linearGradient>
+  <g>
+    <line x1="980" y1="80" x2="1070" y2="26" stroke="url(#met0)" stroke-width="1.6" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-300 180;-300 180" keyTimes="0;.38;.55;1" dur="7s" begin="0s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;.85;0;0" keyTimes="0;.3;.38;.55;1" dur="7s" begin="0s" repeatCount="indefinite"/>
+  </g>
+  <g>
+    <line x1="220" y1="64" x2="130" y2="20" stroke="url(#met1)" stroke-width="1.6" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 0;240 140;240 140" keyTimes="0;.38;.55;1" dur="8.5s" begin="2.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;.85;0;0" keyTimes="0;.3;.38;.55;1" dur="8.5s" begin="2.4s" repeatCount="indefinite"/>
+  </g>
+  <g>
+    <line x1="700" y1="30" x2="790" y2="-14" stroke="url(#met2)" stroke-width="1.6" stroke-linecap="round"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-240 150;-240 150" keyTimes="0;.38;.55;1" dur="9.2s" begin="4.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;.85;0;0" keyTimes="0;.3;.38;.55;1" dur="9.2s" begin="4.6s" repeatCount="indefinite"/>
+  </g>
+    <style>
+      @keyframes tw { 0%,100% { opacity:.15 } 50% { opacity:.9 } }
+      .tw { animation: tw 3.5s ease-in-out infinite; }
+    </style>
+  </defs>
+  <rect width="1200" height="360" fill="#0b0e17"/>
+  <rect width="1200" height="360" fill="url(#g1)"/>
+  <rect width="1200" height="360" fill="url(#g2)"/>
+  <rect width="1200" height="360" fill="url(#g3)"/>
+  <circle cx="1015.1" cy="201.5" r="1.43" fill="#ffffff" opacity="0.33"/>
+  <circle cx="379.0" cy="134.5" r="0.50" fill="#ffffff" opacity="0.45"/>
+  <circle cx="237.4" cy="320.5" r="0.41" fill="#ffffff" opacity="0.44"/>
+  <circle cx="300.5" cy="265.4" r="0.75" fill="#ffffff" opacity="0.41"/>
+  <circle cx="925.2" cy="313.5" r="0.78" fill="#ffffff" opacity="0.32"/>
+  <circle cx="338.0" cy="274.0" r="0.41" fill="#ffffff" opacity="0.49"/>
+  <circle cx="934.0" cy="182.5" r="1.15" fill="#ffffff" opacity="0.53" class="tw" style="animation-delay:2.3s;animation-duration:4.8s"/>
+  <circle cx="312.3" cy="49.1" r="0.59" fill="#ffffff" opacity="0.51"/>
+  <circle cx="155.3" cy="194.9" r="1.24" fill="#ffffff" opacity="0.21"/>
+  <circle cx="590.3" cy="24.9" r="1.60" fill="#ffffff" opacity="0.30"/>
+  <circle cx="658.4" cy="122.1" r="0.56" fill="#ffffff" opacity="0.18"/>
+  <circle cx="257.2" cy="208.2" r="1.61" fill="#ffffff" opacity="0.27"/>
+  <circle cx="843.4" cy="188.5" r="0.88" fill="#ffffff" opacity="0.51"/>
+  <circle cx="130.4" cy="187.4" r="0.62" fill="#ffffff" opacity="0.30" class="tw" style="animation-delay:2.3s;animation-duration:4.3s"/>
+  <circle cx="15.0" cy="264.1" r="1.45" fill="#ffffff" opacity="0.55"/>
+  <circle cx="758.8" cy="2.2" r="0.82" fill="#ffffff" opacity="0.43"/>
+  <circle cx="1025.9" cy="42.0" r="1.27" fill="#ffffff" opacity="0.27" class="tw" style="animation-delay:0.8s;animation-duration:3.2s"/>
+  <circle cx="727.8" cy="71.7" r="0.50" fill="#ffffff" opacity="0.15"/>
+  <circle cx="584.8" cy="21.2" r="1.12" fill="#ffffff" opacity="0.64" class="tw" style="animation-delay:0.9s;animation-duration:2.9s"/>
+  <circle cx="84.7" cy="220.1" r="0.77" fill="#ffffff" opacity="0.27"/>
+  <circle cx="281.5" cy="278.5" r="0.57" fill="#ffffff" opacity="0.19"/>
+  <circle cx="631.9" cy="99.8" r="0.84" fill="#ffffff" opacity="0.30"/>
+  <circle cx="53.2" cy="151.9" r="0.57" fill="#ffffff" opacity="0.46"/>
+  <circle cx="1076.4" cy="330.1" r="0.55" fill="#ffffff" opacity="0.52"/>
+  <circle cx="1038.2" cy="287.4" r="0.71" fill="#ffffff" opacity="0.61"/>
+  <circle cx="803.6" cy="154.5" r="0.57" fill="#ffffff" opacity="0.13" class="tw" style="animation-delay:1.4s;animation-duration:3.9s"/>
+  <circle cx="201.1" cy="347.1" r="0.55" fill="#ffffff" opacity="0.12"/>
+  <circle cx="35.7" cy="322.0" r="0.49" fill="#ffffff" opacity="0.14"/>
+  <circle cx="339.6" cy="342.6" r="0.91" fill="#ffffff" opacity="0.37"/>
+  <circle cx="941.1" cy="185.3" r="0.42" fill="#ffffff" opacity="0.40"/>
+  <circle cx="1166.3" cy="214.3" r="0.55" fill="#ffffff" opacity="0.40"/>
+  <circle cx="1116.2" cy="68.1" r="0.52" fill="#ffffff" opacity="0.26" class="tw" style="animation-delay:0.1s;animation-duration:4.2s"/>
+  <circle cx="1092.1" cy="268.5" r="1.16" fill="#ffffff" opacity="0.31"/>
+  <circle cx="864.8" cy="19.5" r="0.78" fill="#ffffff" opacity="0.65" class="tw" style="animation-delay:2.3s;animation-duration:2.6s"/>
+  <circle cx="317.0" cy="262.5" r="0.70" fill="#ffffff" opacity="0.25"/>
+  <circle cx="771.3" cy="69.1" r="0.97" fill="#ffffff" opacity="0.18"/>
+  <circle cx="63.4" cy="64.7" r="0.53" fill="#ffffff" opacity="0.48"/>
+  <circle cx="313.8" cy="308.1" r="1.12" fill="#ffffff" opacity="0.52"/>
+  <circle cx="509.6" cy="72.8" r="1.60" fill="#ffffff" opacity="0.62"/>
+  <circle cx="575.6" cy="59.0" r="0.85" fill="#ffffff" opacity="0.51"/>
+  <circle cx="860.8" cy="140.6" r="0.60" fill="#ffffff" opacity="0.43" class="tw" style="animation-delay:0.6s;animation-duration:4.8s"/>
+  <circle cx="1041.6" cy="246.8" r="0.93" fill="#ffffff" opacity="0.42"/>
+  <circle cx="335.6" cy="218.4" r="0.61" fill="#ffffff" opacity="0.19"/>
+  <circle cx="936.7" cy="262.4" r="0.95" fill="#ffffff" opacity="0.35" class="tw" style="animation-delay:1.9s;animation-duration:3.1s"/>
+  <circle cx="849.5" cy="319.4" r="0.43" fill="#ffffff" opacity="0.58"/>
+  <circle cx="1172.2" cy="255.9" r="0.48" fill="#ffffff" opacity="0.39"/>
+  <circle cx="853.9" cy="262.8" r="0.42" fill="#ffffff" opacity="0.26"/>
+  <circle cx="1172.1" cy="195.6" r="1.53" fill="#ffffff" opacity="0.39"/>
+  <circle cx="237.2" cy="305.9" r="0.53" fill="#ffffff" opacity="0.29"/>
+  <circle cx="258.2" cy="72.5" r="1.68" fill="#ffffff" opacity="0.20"/>
+  <circle cx="164.3" cy="106.6" r="1.75" fill="#ffffff" opacity="0.57"/>
+  <circle cx="1028.4" cy="46.9" r="0.43" fill="#ffffff" opacity="0.40"/>
+  <circle cx="920.3" cy="350.8" r="0.96" fill="#ffffff" opacity="0.37"/>
+  <circle cx="77.5" cy="70.7" r="1.21" fill="#ffffff" opacity="0.47"/>
+  <circle cx="204.6" cy="194.0" r="0.41" fill="#ffffff" opacity="0.20"/>
+  <circle cx="156.3" cy="160.8" r="0.71" fill="#ffffff" opacity="0.17"/>
+  <circle cx="1063.0" cy="259.0" r="0.56" fill="#ffffff" opacity="0.65"/>
+  <circle cx="293.7" cy="223.5" r="0.88" fill="#ffffff" opacity="0.53"/>
+  <circle cx="361.5" cy="3.6" r="0.40" fill="#ffffff" opacity="0.52" class="tw" style="animation-delay:2.9s;animation-duration:2.8s"/>
+  <circle cx="149.2" cy="248.8" r="1.64" fill="#ffffff" opacity="0.46"/>
+  <circle cx="1028.0" cy="42.4" r="1.12" fill="#ffffff" opacity="0.64"/>
+  <circle cx="95.6" cy="222.4" r="0.41" fill="#ffffff" opacity="0.59"/>
+  <circle cx="277.6" cy="233.1" r="1.20" fill="#ffffff" opacity="0.17"/>
+  <circle cx="157.7" cy="279.8" r="0.70" fill="#ffffff" opacity="0.45"/>
+  <circle cx="829.4" cy="203.7" r="0.40" fill="#ffffff" opacity="0.61" class="tw" style="animation-delay:0.9s;animation-duration:4.2s"/>
+  <circle cx="321.5" cy="251.8" r="0.42" fill="#ffffff" opacity="0.41"/>
+  <circle cx="109.1" cy="147.5" r="0.57" fill="#ffffff" opacity="0.65"/>
+  <circle cx="138.7" cy="176.7" r="0.51" fill="#ffffff" opacity="0.45"/>
+  <circle cx="878.1" cy="335.9" r="0.78" fill="#ffffff" opacity="0.40"/>
+  <circle cx="397.1" cy="17.8" r="0.44" fill="#ffffff" opacity="0.31"/>
+  <circle cx="1119.3" cy="114.0" r="1.08" fill="#ffffff" opacity="0.48" class="tw" style="animation-delay:2.1s;animation-duration:4.8s"/>
+  <circle cx="1078.7" cy="171.2" r="1.17" fill="#ffffff" opacity="0.43"/>
+  <circle cx="505.1" cy="3.6" r="0.41" fill="#ffffff" opacity="0.28"/>
+  <circle cx="226.8" cy="123.3" r="0.86" fill="#ffffff" opacity="0.32"/>
+  <circle cx="396.8" cy="26.3" r="0.87" fill="#ffffff" opacity="0.61" class="tw" style="animation-delay:0.2s;animation-duration:3.9s"/>
+  <circle cx="1189.8" cy="138.4" r="1.51" fill="#ffffff" opacity="0.19"/>
+  <circle cx="640.8" cy="14.6" r="0.46" fill="#ffffff" opacity="0.36"/>
+  <circle cx="98.9" cy="102.0" r="0.57" fill="#ffffff" opacity="0.33"/>
+  <circle cx="446.9" cy="57.4" r="0.67" fill="#ffffff" opacity="0.61"/>
+  <circle cx="982.4" cy="126.6" r="1.05" fill="#ffffff" opacity="0.51"/>
+  <circle cx="250.7" cy="177.0" r="1.52" fill="#ffffff" opacity="0.43"/>
+  <circle cx="104.6" cy="253.1" r="1.10" fill="#ffffff" opacity="0.41"/>
+  <circle cx="886.4" cy="271.9" r="1.06" fill="#ffffff" opacity="0.36"/>
+  <circle cx="510.5" cy="33.3" r="0.88" fill="#ffffff" opacity="0.41"/>
+  <circle cx="862.3" cy="39.2" r="0.41" fill="#ffffff" opacity="0.32"/>
+  <text x="428" y="240" text-anchor="middle" font-size="15" fill="#f9a86c" class="tw" style="animation-delay:.4s">✦</text>
+  <text x="772" y="240" text-anchor="middle" font-size="11" fill="#6e82ff" class="tw" style="animation-delay:1.6s">✦</text>
+  <text x="520" y="176" text-anchor="middle" font-size="10" fill="#ff7fa5" class="tw" style="animation-delay:2.4s">✦</text>
+  <text x="600" y="192" text-anchor="middle" font-size="13" letter-spacing="7" fill="#9aa3b8">HI, I'M</text>
+  <text x="600" y="252" text-anchor="middle" font-size="46" font-weight="700" fill="url(#titleGrad)" filter="url(#glow)">明雨 · Mingyu</text>
+  <text x="600" y="294" text-anchor="middle" font-size="16" fill="#f5f2ee">Android 开发者 · EMOO 作者 · 计算机科学与技术大四在读</text>
+  <text x="600" y="326" text-anchor="middle" font-size="14" font-style="italic" fill="#8a93a8">「把喜欢的事情做到极致，把复杂的想法做成产品。」</text>
+  <line x1="420" y1="356" x2="780" y2="356" stroke="url(#divider)" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="600" cy="356" r="3" fill="#ff7fa5" filter="url(#glow)"/>
+  <text x="40" y="351" font-size="11" fill="#6b7180" opacity="0.85">✦ 明雨 · Mingyu</text>
+  <text x="1160" y="351" text-anchor="end" font-size="11" fill="#6b7180" opacity="0.85" letter-spacing="1">github.com/mingyu0401</text>
+</svg>
