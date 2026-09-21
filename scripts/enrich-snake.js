@@ -8,7 +8,8 @@ const VARIANTS = [
   { file: 'github-contribution-grid-snake-dark.svg', bright: '#00c647', mid: '#0f6d31' },
 ];
 
-const FOOD_COUNT = 108;
+const FOOD_COUNT = 220;
+const SCATTER_R = 2;
 const SNAKE_CYAN = '#00b3c4';
 const GRID_X0 = 2;
 const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
@@ -114,10 +115,22 @@ function enrich({ file, bright, mid }, rnd) {
   let m;
   while ((m = re.exec(svg))) cellPos.set(+m[1] - 2 + ',' + (+m[2] - 2), [+m[1], +m[2]]);
 
+  // Food scatters over the path itself and its surrounding cells (radius SCATTER_R).
+  // Off-path food is eaten shortly after the head passes the nearest path cell.
   const candidates = [];
-  for (const [key, t] of arrivals) {
-    const cell = cellPos.get(key);
-    if (cell) candidates.push({ xy: cell, t });
+  for (const [key, cell] of cellPos) {
+    const [hx, hy] = key.split(',').map(Number);
+    let best = null;
+    for (let dx = -SCATTER_R; dx <= SCATTER_R; dx++) {
+      for (let dy = -SCATTER_R; dy <= SCATTER_R; dy++) {
+        const t = arrivals.get(hx + dx * PITCH + ',' + (hy + dy * PITCH));
+        if (t !== undefined) {
+          const d = Math.max(Math.abs(dx), Math.abs(dy));
+          if (!best || t + d * 0.12 < best.t) best = { t: t + d * 0.12, d };
+        }
+      }
+    }
+    if (best) candidates.push({ xy: cell, t: Math.min(best.t, 99.9), d: best.d });
   }
 
   for (let i = candidates.length - 1; i > 0; i--) {
