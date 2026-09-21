@@ -8,11 +8,14 @@ const VARIANTS = [
   { file: 'github-contribution-grid-snake-dark.svg', bright: '#00c647', mid: '#0f6d31' },
 ];
 
-const FOOD_COUNT = 220; // upper bound; only path cells qualify, so real count = cells the head visits
+const FOOD_CAP = 400;
 const SNAKE_CYAN = '#00b3c4';
-const GRID_X0 = 2;
-const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
 const PITCH = 16;
+const ROWS = 7;
+const GRID_X0 = 2; // cell rect x; head coord = rect coord - 2
+const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
+const T_FIRST = 0.74; // % when head reaches the first cell
+const T_LAST = 98.5;  // % when head reaches the last cell
 
 function mulberry32(a) {
   return function () {
@@ -30,53 +33,68 @@ function dateSeed() {
   return h;
 }
 
-function extractKeyframes(style, name) {
-  const i = style.indexOf('@keyframes ' + name + '{');
+function extractKeyframes(text, name) {
+  const i = text.indexOf('@keyframes ' + name + '{');
   if (i < 0) return null;
   let d = 0, j = i;
-  for (; j < style.length; j++) {
-    if (style[j] === '{') d++;
-    else if (style[j] === '}') { d--; if (d === 0) break; }
+  for (; j < text.length; j++) {
+    if (text[j] === '{') d++;
+    else if (text[j] === '}') { d--; if (d === 0) break; }
   }
-  return style.slice(i, j + 1);
+  return text.slice(i, j + 1);
 }
 
-// Parse the head (s0) keyframes into waypoints sorted by percentage.
-function headWaypoints(style) {
-  const kf = extractKeyframes(style, 's0');
-  if (!kf) throw new Error('no @keyframes s0 found');
-  const pts = [];
-  const re = /([\d.,%\s]+)\{transform:translate\((-?\d+(?:\.\d+)?)px,(-?\d+(?:\.\d+)?)px\)\}/g;
-  let m;
-  while ((m = re.exec(kf))) {
-    const pcts = m[1].split(',').map((s) => parseFloat(s.trim()));
-    for (const p of pcts) pts.push({ p, x: +m[2], y: +m[3] });
+function replaceKeyframes(svg, name, text) {
+  const old = extractKeyframes(svg, name);
+  if (!old) throw new Error('missing @keyframes ' + name);
+  return svg.replace(old, () => text);
+}
+
+// Serpentine sweep of the whole grid in head coords: down even columns,
+// up odd columns. Every cell is visited exactly once.
+function serpCells(cols) {
+  const cells = [];
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      cells.push([c * PITCH, (c % 2 === 0 ? r : ROWS - 1 - r) * PITCH]);
+    }
   }
-  pts.sort((a, b) => a.p - b.p);
+  return cells;
+}
+
+// Keep only direction-change points (corners) with their cell index — linear
+// CSS interpolation between corners reproduces the exact per-cell arrival times.
+function cornersOf(cells) {
+  const pts = [[cells[0][0], cells[0][1], 0]];
+  for (let i = 1; i < cells.length - 1; i++) {
+    const [x0, y0] = cells[i - 1], [x1, y1] = cells[i], [x2, y2] = cells[i + 1];
+    if (x2 - x1 !== x1 - x0 || y2 - y1 !== y1 - y0) pts.push([x1, y1, i]);
+  }
+  pts.push([cells[cells.length - 1][0], cells[cells.length - 1][1], cells.length - 1]);
   return pts;
 }
 
-// Expand head waypoints into per-cell (16px) arrival times.
-function cellArrivalTimes(waypoints) {
-  const times = new Map(); // "x,y" -> earliest arrival %
-  const visit = (x, y, p) => {
-    if (y < 0) return;
-    const k = x + ',' + y;
-    if (!times.has(k)) times.set(k, p);
-  };
-  for (let i = 0; i < waypoints.length - 1; i++) {
-    const a = waypoints[i], b = waypoints[i + 1];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const dist = Math.abs(dx) + Math.abs(dy);
-    if (dist % PITCH !== 0 || dist === 0) continue;
-    const steps = dist / PITCH;
-    const sx = dx === 0 ? 0 : dx / dist * PITCH;
-    const sy = dy === 0 ? 0 : dy / dist * PITCH;
-    for (let s = (i === 0 ? 1 : 0); s <= steps; s++) {
-      visit(a.x + sx * s, a.y + sy * s, a.p + ((b.p - a.p) * s) / steps);
-    }
+function translate(x, y) { return 'transform:translate(' + x + 'px,' + y + 'px)'; }
+
+// Head keyframes: entry from above, timed corners, exit below the grid.
+function headKeyframes(corners, step) {
+  let kf = '@keyframes s0{0%{' + translate(0, -16) + '}';
+  for (const [x, y, k] of corners) kf += (T_FIRST + k * step).toFixed(2) + '%{' + translate(x, y) + '}';
+  const last = corners[corners.length - 1];
+  kf += (T_LAST + step).toFixed(2) + '%,100%{' + translate(last[0], 112) + '}}';
+  return kf;
+}
+
+// Body segment i replays the head path i*step behind, waiting off-grid at start.
+function segKeyframes(i, corners, step) {
+  let kf = '@keyframes s' + i + '{0%{' + translate(0, -16) + '}';
+  for (const [x, y, k] of corners) {
+    const t = T_FIRST + k * step - i * step;
+    if (t > 0.01) kf += t.toFixed(2) + '%{' + translate(x, y) + '}';
   }
-  return times;
+  const last = corners[corners.length - 1];
+  kf += '100%{' + translate(last[0], 112) + '}}';
+  return kf;
 }
 
 function enrich({ file, bright, mid }, rnd) {
@@ -98,35 +116,56 @@ function enrich({ file, bright, mid }, rnd) {
     .map((m) => m[1] + ',' + m[2]));
   let added = '';
   const lastColX = Math.max(...[...have].map((k) => +k.split(',')[0]));
+  const cols = (lastColX - GRID_X0) / PITCH + 1;
   for (let x = GRID_X0; x <= lastColX; x += PITCH) {
     for (const y of GRID_Y) {
       if (!have.has(x + ',' + y)) added += '<rect data-add="1" class="c" x="' + x + '" y="' + y + '" rx="2" ry="2"/>\n';
     }
   }
 
-  const styleMatch = svg.match(/<style>([\s\S]*?)<\/style>/);
-  if (!styleMatch) throw new Error(file + ': no <style> block');
-  const arrivals = cellArrivalTimes(headWaypoints(styleMatch[1]));
+  // Rewrite the snake route: serpentine sweep over every cell.
+  const cells = serpCells(cols);
+  const step = (T_LAST - T_FIRST) / (cells.length - 1);
+  const corners = cornersOf(cells);
+  svg = replaceKeyframes(svg, 's0', headKeyframes(corners, step));
+  for (let i = 1; i <= 3; i++) svg = replaceKeyframes(svg, 's' + i, segKeyframes(i, corners, step));
 
-  // Index empty cells (class exactly "c") by position; food rect = head pos + 2.
-  const cellPos = new Map();
-  const re = /<rect class="c" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g;
-  let m;
-  while ((m = re.exec(svg))) cellPos.set(+m[1] - 2 + ',' + (+m[2] - 2), [+m[1], +m[2]]);
+  // Bottom bar grows linearly with the sweep instead of the old eating steps.
+  svg = replaceKeyframes(svg, 'u0',
+    '@keyframes u0{0%,' + T_FIRST + '%{transform:scale(0.000,1)}' + T_LAST + '%,100%{transform:scale(1.000,1)}}');
 
-  // Food may only sit on cells the snake head actually traverses, and is eaten
-  // exactly when the head arrives there (same timing as snk's own eaten cells).
+  // Arrival time of every cell on the new route.
+  const arrival = new Map();
+  cells.forEach(([x, y], k) => arrival.set(x + ',' + y, T_FIRST + k * step));
+
+  // Re-time contribution cells so they go dark exactly when the head arrives.
+  const contribPos = new Map();
+  for (const m of svg.matchAll(/<rect class="c (c\d+)" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g))
+    contribPos.set(m[1], [+m[2] - 2, +m[3] - 2]);
+  for (const [name, [hx, hy]] of contribPos) {
+    const old = extractKeyframes(svg, name);
+    if (!old) continue;
+    const color = (old.match(/fill:var\((--c\d)\)/) || [])[1] || '--c4';
+    const t = Math.min(arrival.get(hx + ',' + hy) ?? 99.9, 99.9);
+    const on = t.toFixed(2), off = Math.min(t + 0.02, 100).toFixed(2);
+    svg = replaceKeyframes(svg, name,
+      '@keyframes ' + name + '{' + on + '%{fill:var(' + color + ')}' + off + '%,100%{fill:var(--ce)}}');
+  }
+
+  // Food: every empty cell the head traverses (= whole grid), eaten on arrival.
   const candidates = [];
-  for (const [key, xy] of cellPos) {
-    const t = arrivals.get(key);
-    if (t !== undefined) candidates.push({ xy, t });
+  const re = /<rect class="c" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g;
+  for (const m of svg.matchAll(re)) {
+    const key = (+m[1] - 2) + ',' + (+m[2] - 2);
+    const t = arrival.get(key);
+    if (t !== undefined) candidates.push({ xy: [+m[1], +m[2]], t });
   }
-
-  for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  for (const m of added.matchAll(/<rect data-add="1" class="c" x="(\d+)" y="(\d+)"/g)) {
+    const key = (+m[1] - 2) + ',' + (+m[2] - 2);
+    const t = arrival.get(key);
+    if (t !== undefined) candidates.push({ xy: [+m[1], +m[2]], t });
   }
-  const n = Math.min(FOOD_COUNT, candidates.length);
+  const n = Math.min(FOOD_CAP, candidates.length);
 
   let css = ':root{--cf1:' + bright + ';--cf2:' + mid + '}';
   let rects = added;
@@ -146,7 +185,8 @@ function enrich({ file, bright, mid }, rnd) {
   svg = svg.slice(0, snakeStart) + rects + svg.slice(snakeStart);
 
   fs.writeFileSync(p, svg);
-  console.log(file + ': +' + n + ' eatable food, +' + (added.match(/<rect/g) || []).length + ' completed cells');
+  console.log(file + ': +' + n + ' eatable food on ' + cells.length + '-cell route, +'
+    + (added.match(/<rect/g) || []).length + ' completed cells');
 }
 
 const rnd = mulberry32(dateSeed());
