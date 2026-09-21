@@ -10,12 +10,6 @@ const VARIANTS = [
 
 const FOOD_COUNT = 108;
 
-// snake path from the s0 keyframes (translate waypoints), same for all segments
-const PATH_PTS = [
-  [0, -16], [0, 0], [32, 0], [32, 32], [0, 32], [0, 96], [736, 96],
-  [736, 48], [816, 48], [816, 96], [832, 96], [832, 0], [64, 0], [64, -16],
-];
-
 function mulberry32(a) {
   return function () {
     a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -32,45 +26,101 @@ function dateSeed() {
   return h;
 }
 
-function distToSeg(px, py, ax, ay, bx, by) {
-  const dx = bx - ax, dy = by - ay;
-  const len2 = dx * dx + dy * dy;
-  let t = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
-  t = Math.max(0, Math.min(1, t));
-  return Math.hypot(ax + t * dx - px, ay + t * dy - py);
+function extractKeyframes(style, name) {
+  const i = style.indexOf('@keyframes ' + name + '{');
+  if (i < 0) return null;
+  let d = 0, j = i;
+  for (; j < style.length; j++) {
+    if (style[j] === '{') d++;
+    else if (style[j] === '}') { d--; if (d === 0) break; }
+  }
+  return style.slice(i, j + 1);
 }
 
-function onSnakePath(cx, cy) {
-  for (let i = 0; i < PATH_PTS.length - 1; i++) {
-    if (distToSeg(cx, cy, ...PATH_PTS[i], ...PATH_PTS[i + 1]) < 9) return true;
+// Parse the head (s0) keyframes into waypoints sorted by percentage.
+function headWaypoints(style) {
+  const kf = extractKeyframes(style, 's0');
+  if (!kf) throw new Error('no @keyframes s0 found');
+  const pts = [];
+  const re = /([\d.,%\s]+)\{transform:translate\((-?\d+(?:\.\d+)?)px,(-?\d+(?:\.\d+)?)px\)\}/g;
+  let m;
+  while ((m = re.exec(kf))) {
+    const pcts = m[1].split(',').map((s) => parseFloat(s.trim()));
+    for (const p of pcts) pts.push({ p, x: +m[2], y: +m[3] });
   }
-  return false;
+  pts.sort((a, b) => a.p - b.p);
+  return pts;
+}
+
+// Expand head waypoints into per-cell (16px) arrival times.
+function cellArrivalTimes(waypoints) {
+  const times = new Map(); // "x,y" -> earliest arrival %
+  const visit = (x, y, p) => {
+    if (y < 0) return;
+    const k = x + ',' + y;
+    if (!times.has(k)) times.set(k, p);
+  };
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const a = waypoints[i], b = waypoints[i + 1];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const dist = Math.abs(dx) + Math.abs(dy);
+    if (dist % 16 !== 0 || dist === 0) continue;
+    const steps = dist / 16;
+    const sx = dx === 0 ? 0 : dx / dist * 16;
+    const sy = dy === 0 ? 0 : dy / dist * 16;
+    for (let s = (i === 0 ? 1 : 0); s <= steps; s++) {
+      visit(a.x + sx * s, a.y + sy * s, a.p + ((b.p - a.p) * s) / steps);
+    }
+  }
+  return times;
 }
 
 function enrich({ file, bright, mid }, rnd) {
   const p = path.join(dir, file);
   let svg = fs.readFileSync(p, 'utf8');
-  const candidates = [];
-  const re = /<rect class="(c(?: c\d+)?)" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g;
+
+  // Remove food added by previous runs (inline-styled class="c" rects).
+  svg = svg.replace(/<rect class="c" x="[\d.]+" y="[\d.]+" rx="2" ry="2" style="fill:#[0-9a-fA-F]+"\/>\n/g, '');
+
+  const styleMatch = svg.match(/<style>([\s\S]*?)<\/style>/);
+  if (!styleMatch) throw new Error(file + ': no <style> block');
+  const style = styleMatch[1];
+
+  const arrivals = cellArrivalTimes(headWaypoints(style));
+
+  // Index empty cells (class exactly "c") by position; food rect = head pos + 2.
+  const cellPos = new Map();
+  const re = /<rect class="c" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g;
   let m;
-  while ((m = re.exec(svg))) {
-    if (m[1] !== 'c') continue; // already a food cell
-    const x = m[2], y = m[3];
-    if (!onSnakePath(+x + 6, +y + 6)) candidates.push([x, y]);
+  while ((m = re.exec(svg))) cellPos.set(+m[1] - 2 + ',' + (+m[2] - 2), [+m[1], +m[2]]);
+
+  const candidates = [];
+  for (const [key, t] of arrivals) {
+    const cell = cellPos.get(key);
+    if (cell) candidates.push({ xy: cell, t });
   }
+
   for (let i = candidates.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1));
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
   }
   const n = Math.min(FOOD_COUNT, candidates.length);
-  let out = '';
+
+  let css = ':root{--cf1:' + bright + ';--cf2:' + mid + '}';
+  let rects = '';
   for (let i = 0; i < n; i++) {
-    const fill = rnd() < 0.7 ? bright : mid;
-    out += `<rect class="c" x="${candidates[i][0]}" y="${candidates[i][1]}" rx="2" ry="2" style="fill:${fill}"/>\n`;
+    const c = candidates[i];
+    const v = rnd() < 0.7 ? '--cf1' : '--cf2';
+    const on = c.t.toFixed(2);
+    const off = Math.min(c.t + 0.02, 100).toFixed(2);
+    css += '@keyframes f' + i + '{' + on + '%{fill:var(' + v + ')}' + off + '%,100%{fill:var(--ce)}}.c.f' + i + '{fill:var(' + v + ');animation-name:f' + i + '}';
+    rects += '<rect class="c f' + i + '" x="' + c.xy[0] + '" y="' + c.xy[1] + '" rx="2" ry="2"/>\n';
   }
-  svg = svg.replace('</svg>', out + '</svg>');
+
+  svg = svg.replace('</style>', css + '</style>');
+  svg = svg.replace('</svg>', rects + '</svg>');
   fs.writeFileSync(p, svg);
-  console.log(`${file}: +${n} food cells`);
+  console.log(file + ': +' + n + ' eatable food cells (path cells: ' + candidates.length + ')');
 }
 
 const rnd = mulberry32(dateSeed());
