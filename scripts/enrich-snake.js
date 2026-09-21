@@ -9,7 +9,8 @@ const VARIANTS = [
 ];
 
 const FOOD_COUNT = 220;
-const SCATTER_R = 2;
+const EAT_DELAY = 0.15; // % of the cycle the fade wave travels per cell of distance
+const JITTER = 0.4;     // max random desync (in %) so equal-distance cells don't vanish in lockstep
 const SNAKE_CYAN = '#00b3c4';
 const GRID_X0 = 2;
 const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
@@ -115,22 +116,23 @@ function enrich({ file, bright, mid }, rnd) {
   let m;
   while ((m = re.exec(svg))) cellPos.set(+m[1] - 2 + ',' + (+m[2] - 2), [+m[1], +m[2]]);
 
-  // Food scatters over the path itself and its surrounding cells (radius SCATTER_R).
-  // Off-path food is eaten shortly after the head passes the nearest path cell.
+  // Food is placed uniformly at random over all empty cells. A piece disappears
+  // ("eaten") when the fade wave around the snake head reaches its neighbourhood:
+  // the head must actually be near the cell, so the reference path cell is the
+  // CLOSEST one (earliest visit wins ties), not the one giving the earliest time.
+  const route = [...arrivals].map(([k, t]) => {
+    const [x, y] = k.split(',').map(Number);
+    return { x, y, t };
+  });
   const candidates = [];
-  for (const [key, cell] of cellPos) {
+  for (const [key, xy] of cellPos) {
     const [hx, hy] = key.split(',').map(Number);
     let best = null;
-    for (let dx = -SCATTER_R; dx <= SCATTER_R; dx++) {
-      for (let dy = -SCATTER_R; dy <= SCATTER_R; dy++) {
-        const t = arrivals.get(hx + dx * PITCH + ',' + (hy + dy * PITCH));
-        if (t !== undefined) {
-          const d = Math.max(Math.abs(dx), Math.abs(dy));
-          if (!best || t + d * 0.12 < best.t) best = { t: t + d * 0.12, d };
-        }
-      }
+    for (const seg of route) {
+      const d = Math.max(Math.abs(hx - seg.x), Math.abs(hy - seg.y)) / PITCH;
+      if (!best || d < best.d - 0.01 || (d < best.d + 0.01 && seg.t < best.t)) best = { d, t: seg.t };
     }
-    if (best) candidates.push({ xy: cell, t: Math.min(best.t, 99.9), d: best.d });
+    if (best) candidates.push({ xy, t: Math.min(best.t + best.d * EAT_DELAY + rnd() * JITTER, 99.9) });
   }
 
   for (let i = candidates.length - 1; i > 0; i--) {
