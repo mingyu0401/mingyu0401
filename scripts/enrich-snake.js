@@ -8,9 +8,7 @@ const VARIANTS = [
   { file: 'github-contribution-grid-snake-dark.svg', bright: '#00c647', mid: '#0f6d31' },
 ];
 
-const FOOD_COUNT = 220;
-const EAT_DELAY = 0.15; // % of the cycle the fade wave travels per cell of distance
-const JITTER = 0.4;     // max random desync (in %) so equal-distance cells don't vanish in lockstep
+const FOOD_COUNT = 220; // upper bound; only path cells qualify, so real count = cells the head visits
 const SNAKE_CYAN = '#00b3c4';
 const GRID_X0 = 2;
 const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
@@ -116,23 +114,12 @@ function enrich({ file, bright, mid }, rnd) {
   let m;
   while ((m = re.exec(svg))) cellPos.set(+m[1] - 2 + ',' + (+m[2] - 2), [+m[1], +m[2]]);
 
-  // Food is placed uniformly at random over all empty cells. A piece disappears
-  // ("eaten") when the fade wave around the snake head reaches its neighbourhood:
-  // the head must actually be near the cell, so the reference path cell is the
-  // CLOSEST one (earliest visit wins ties), not the one giving the earliest time.
-  const route = [...arrivals].map(([k, t]) => {
-    const [x, y] = k.split(',').map(Number);
-    return { x, y, t };
-  });
+  // Food may only sit on cells the snake head actually traverses, and is eaten
+  // exactly when the head arrives there (same timing as snk's own eaten cells).
   const candidates = [];
   for (const [key, xy] of cellPos) {
-    const [hx, hy] = key.split(',').map(Number);
-    let best = null;
-    for (const seg of route) {
-      const d = Math.max(Math.abs(hx - seg.x), Math.abs(hy - seg.y)) / PITCH;
-      if (!best || d < best.d - 0.01 || (d < best.d + 0.01 && seg.t < best.t)) best = { d, t: seg.t };
-    }
-    if (best) candidates.push({ xy, t: Math.min(best.t + best.d * EAT_DELAY + rnd() * JITTER, 99.9) });
+    const t = arrivals.get(key);
+    if (t !== undefined) candidates.push({ xy, t });
   }
 
   for (let i = candidates.length - 1; i > 0; i--) {
