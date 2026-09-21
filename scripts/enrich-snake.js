@@ -9,6 +9,10 @@ const VARIANTS = [
 ];
 
 const FOOD_COUNT = 108;
+const SNAKE_CYAN = '#00b3c4';
+const GRID_X0 = 2;
+const GRID_Y = [2, 18, 34, 50, 66, 82, 98];
+const PITCH = 16;
 
 function mulberry32(a) {
   return function () {
@@ -64,10 +68,10 @@ function cellArrivalTimes(waypoints) {
     const a = waypoints[i], b = waypoints[i + 1];
     const dx = b.x - a.x, dy = b.y - a.y;
     const dist = Math.abs(dx) + Math.abs(dy);
-    if (dist % 16 !== 0 || dist === 0) continue;
-    const steps = dist / 16;
-    const sx = dx === 0 ? 0 : dx / dist * 16;
-    const sy = dy === 0 ? 0 : dy / dist * 16;
+    if (dist % PITCH !== 0 || dist === 0) continue;
+    const steps = dist / PITCH;
+    const sx = dx === 0 ? 0 : dx / dist * PITCH;
+    const sy = dy === 0 ? 0 : dy / dist * PITCH;
     for (let s = (i === 0 ? 1 : 0); s <= steps; s++) {
       visit(a.x + sx * s, a.y + sy * s, a.p + ((b.p - a.p) * s) / steps);
     }
@@ -79,14 +83,30 @@ function enrich({ file, bright, mid }, rnd) {
   const p = path.join(dir, file);
   let svg = fs.readFileSync(p, 'utf8');
 
-  // Remove food added by previous runs (inline-styled class="c" rects).
-  svg = svg.replace(/<rect class="c" x="[\d.]+" y="[\d.]+" rx="2" ry="2" style="fill:#[0-9a-fA-F]+"\/>\n/g, '');
+  // Strip output of previous runs so re-running is idempotent.
+  svg = svg.replace(/<rect class="c" x="[\d.]+" y="[\d.]+" rx="2" ry="2" style="fill:#[0-9a-fA-F]+"\/>\r?\n/g, '');
+  svg = svg.replace(/<rect class="c f\d+"[^>]*\/>\r?\n/g, '');
+  svg = svg.replace(/<rect data-add="1"[^>]*\/>\r?\n/g, '');
+  svg = svg.replace(/:root\{--cf1:[\s\S]*?(?=<\/style>)/, '');
+
+  // Cyan snake: head segments via --cs, body bar follows the same color.
+  svg = svg.replace(/--cs:[^;}]+/, '--cs:' + SNAKE_CYAN);
+  svg = svg.replace(/(\.u\.u\d+\{)fill:var\(--c4\)/g, '$1fill:var(--cs)');
+
+  // Complete the grid: snk omits not-yet-happened days in the last column.
+  const have = new Set([...svg.matchAll(/<rect class="[^"]*" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g)]
+    .map((m) => m[1] + ',' + m[2]));
+  let added = '';
+  const lastColX = Math.max(...[...have].map((k) => +k.split(',')[0]));
+  for (let x = GRID_X0; x <= lastColX; x += PITCH) {
+    for (const y of GRID_Y) {
+      if (!have.has(x + ',' + y)) added += '<rect data-add="1" class="c" x="' + x + '" y="' + y + '" rx="2" ry="2"/>\n';
+    }
+  }
 
   const styleMatch = svg.match(/<style>([\s\S]*?)<\/style>/);
   if (!styleMatch) throw new Error(file + ': no <style> block');
-  const style = styleMatch[1];
-
-  const arrivals = cellArrivalTimes(headWaypoints(style));
+  const arrivals = cellArrivalTimes(headWaypoints(styleMatch[1]));
 
   // Index empty cells (class exactly "c") by position; food rect = head pos + 2.
   const cellPos = new Map();
@@ -107,7 +127,7 @@ function enrich({ file, bright, mid }, rnd) {
   const n = Math.min(FOOD_COUNT, candidates.length);
 
   let css = ':root{--cf1:' + bright + ';--cf2:' + mid + '}';
-  let rects = '';
+  let rects = added;
   for (let i = 0; i < n; i++) {
     const c = candidates[i];
     const v = rnd() < 0.7 ? '--cf1' : '--cf2';
@@ -117,10 +137,14 @@ function enrich({ file, bright, mid }, rnd) {
     rects += '<rect class="c f' + i + '" x="' + c.xy[0] + '" y="' + c.xy[1] + '" rx="2" ry="2"/>\n';
   }
 
+  // Food and added cells go BEFORE the snake rects so the snake draws on top.
   svg = svg.replace('</style>', css + '</style>');
-  svg = svg.replace('</svg>', rects + '</svg>');
+  const snakeStart = svg.indexOf('<rect class="u');
+  if (snakeStart < 0) throw new Error(file + ': no snake rects found');
+  svg = svg.slice(0, snakeStart) + rects + svg.slice(snakeStart);
+
   fs.writeFileSync(p, svg);
-  console.log(file + ': +' + n + ' eatable food cells (path cells: ' + candidates.length + ')');
+  console.log(file + ': +' + n + ' eatable food, +' + (added.match(/<rect/g) || []).length + ' completed cells');
 }
 
 const rnd = mulberry32(dateSeed());
