@@ -4,12 +4,18 @@ var path = require('path');
 var outDir = process.argv[2] || 'dist';
 fs.mkdirSync(outDir, { recursive: true });
 
+var fontDir = path.join(__dirname, '..', 'assets');
+var woff400 = fs.readFileSync(path.join(fontDir, 'banner-font-400.woff')).toString('base64');
+var woff700 = fs.readFileSync(path.join(fontDir, 'banner-font-700.woff')).toString('base64');
+
 var LINE1 = '明雨 Mingyu · Android 开发者 · EMOO 作者';
 var LINE2 = 'Keep building, keep playing.';
 
 var html = '<!doctype html><html><head><meta charset="utf-8"><style>'+
 '*{margin:0;padding:0;box-sizing:border-box}'+
-'body{width:880px;height:192px;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;position:relative}'+
+'@font-face{font-family:Banner;font-style:normal;font-weight:400;font-display:block;src:url(data:font/woff;base64,'+woff400+') format("woff")}'+
+'@font-face{font-family:Banner;font-style:normal;font-weight:700;font-display:block;src:url(data:font/woff;base64,'+woff700+') format("woff")}'+
+'body{width:880px;height:192px;overflow:hidden;font-family:Banner,system-ui,-apple-system,sans-serif;position:relative}'+
 '.g1{position:absolute;inset:0;background:linear-gradient(135deg,#0a0a1a 0%,#1a0533 50%,#0a0a1a 100%);background-size:400% 400%;animation:gShift 8s ease infinite}'+
 '.g2{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 70% 40%,rgba(255,255,255,0.03) 0%,transparent 70%);animation:fPulse 8s ease-in-out infinite}'+
 '.g3{position:absolute;inset:0;background:radial-gradient(ellipse 40% 60% at 20% 60%,rgba(255,255,255,0.02) 0%,transparent 60%);animation:fPulse 8s ease-in-out infinite reverse}'+
@@ -20,10 +26,10 @@ var html = '<!doctype html><html><head><meta charset="utf-8"><style>'+
 '.s{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite}'+
 '@keyframes twinkle{0%,100%{opacity:var(--a)}50%{opacity:calc(var(--a)*0.2)}}'+
 '.txt{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none}'+
-'.l1{font-size:28px;font-weight:700;letter-spacing:0.05em;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,0.9);white-space:nowrap}'+
+'.l1{font-size:28px;font-weight:700;letter-spacing:0.05em;line-height:1.15;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,0.9);white-space:nowrap}'+
 '.l1 span{display:inline-block;width:2px;height:1.1em;background:rgba(255,255,255,0.7);vertical-align:middle;margin-left:2px;animation:blink 0.7s step-end infinite}'+
 '@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}'+
-'.l2{margin-top:2px;font-size:15px;color:rgba(255,255,255,0.55);font-style:italic;opacity:0;animation:fadeIn 8s ease forwards}'+
+'.l2{margin-top:2px;font-size:15px;font-weight:400;line-height:1.3;color:rgba(255,255,255,0.55);font-style:italic;opacity:0;animation:fadeIn 8s ease forwards}'+
 '@keyframes fadeIn{0%,55%{opacity:0}70%,100%{opacity:1}}'+
 '.accent{width:100px;height:2px;background:linear-gradient(90deg,transparent,#ff7fa5,transparent);opacity:0;animation:slideIn 8s ease forwards}'+
 '@keyframes slideIn{0%,45%{opacity:0;transform:scaleX(0)}65%,100%{opacity:1;transform:scaleX(1)}}'+

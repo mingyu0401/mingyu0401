@@ -14,7 +14,6 @@ const path = require('path');
 
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   const page = await browser.newPage({ viewport: { width: 880, height: 192 }, deviceScaleFactor: dpr });
-  const client = await page.context().newCDPSession(page);
   const html = fs.readFileSync(htmlFile, 'utf8');
   await page.setContent(html, { waitUntil: 'load' });
   await page.waitForTimeout(1000);
@@ -28,8 +27,8 @@ const path = require('path');
     const wait = target - Date.now();
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     else if (wait < -15) missed++;
-    const { data } = await client.send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(outDir, `frame-${String(i).padStart(4, '0')}.png`), Buffer.from(data, 'base64'));
+    const buf = await page.screenshot({ type: 'png' });
+    fs.writeFileSync(path.join(outDir, `frame-${String(i).padStart(4, '0')}.png`), buf);
   }
   console.log(`rendered ${N} frames in ${(Date.now() - t0) / 1000}s (late frames: ${missed})`);
   await browser.close();
