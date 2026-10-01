@@ -8,10 +8,10 @@ const VARIANTS = [
   { file: 'github-contribution-grid-snake-dark.svg', bright: '#00c647', mid: '#0f6d31' },
 ];
 
-const PATH_LEN = 250;   // the head walks this many steps, revisiting cells is expected
-const FOOD_COUNT = 125; // randomly chosen from the empty cells the route visited
+const PATH_LEN = 400;   // the head walks this many steps, revisiting cells is expected
+const FOOD_COUNT = 200; // target; no-adjacency constraint caps the actual count
 const SNAKE_CYAN = '#00b3c4';
-const CYCLE_MS = 21600; // snk default is 13500ms; longer cycle = slower snake
+const CYCLE_MS = 20640; // snk v3 default is 12900ms; scaled so the 400-step walk keeps the same head speed
 const PITCH = 16;
 const ROWS = 7;
 const GRID_X0 = 2; // cell rect x; head coord = rect coord - 2
@@ -88,12 +88,24 @@ function randomRoute(cols, checkpoints, rnd) {
     }
   }
   while (cells.length < PATH_LEN) {
-    const opts = noBack(neighbors(cur[0], cur[1]));
-    const fresh = opts.filter(([x, y]) => !seen.has(x + ',' + y));
-    const pool = fresh.length && rnd() < 0.85 ? fresh : opts; // explore new ground when possible
-    cur = pool[Math.floor(rnd() * pool.length)];
-    cells.push(cur);
-    seen.add(cur.join(','));
+    // Head for a random cell it hasn't touched yet, so the walk keeps
+    // spreading across the grid instead of diffusing around the last
+    // checkpoint.
+    const unseen = [];
+    for (let x = 0; x < cols; x++)
+      for (let y = 0; y < ROWS; y++)
+        if (!seen.has(x + ',' + y)) unseen.push([x, y]);
+    const target = unseen.length ? unseen[Math.floor(rnd() * unseen.length)] : [Math.floor(rnd() * cols), Math.floor(rnd() * ROWS)];
+    let ttl = 45 + Math.floor(rnd() * 40);
+    while (cells.length < PATH_LEN && ttl-- > 0 && !(cur[0] === target[0] && cur[1] === target[1])) {
+      const opts = noBack(neighbors(cur[0], cur[1]));
+      const fresh = opts.filter(([x, y]) => !seen.has(x + ',' + y));
+      const pool = fresh.length && rnd() < 0.85 ? fresh : opts; // explore new ground when possible
+      pool.sort((a, b) => dist(a, target) - dist(b, target) || rnd() - 0.5);
+      cur = rnd() < 0.15 ? pool[Math.floor(rnd() * pool.length)] : pool[0];
+      cells.push(cur);
+      seen.add(cur.join(','));
+    }
   }
   return cells;
 }
@@ -160,7 +172,7 @@ function enrich({ file, bright, mid }, rnd) {
   svg = svg.replace(/(\.u\.u\d+\{)fill:var\(--c4\)/g, '$1fill:var(--cs)');
 
   // Slower: stretch the snk cycle so the whole walk takes ~1.6x longer.
-  svg = svg.replace(/13500ms/g, CYCLE_MS + 'ms');
+  svg = svg.replace(/12900ms/g, CYCLE_MS + 'ms');
 
   // Complete the grid: snk omits not-yet-happened days in the last column.
   const have = new Set([...svg.matchAll(/<rect class="[^"]*" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g)]
@@ -224,12 +236,32 @@ function enrich({ file, bright, mid }, rnd) {
     const j = Math.floor(rnd() * (i + 1));
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
   }
-  const n = Math.min(FOOD_COUNT, candidates.length);
+  // Keep food cells from touching orthogonally so they read as scattered dots
+  // instead of chains and blocks, and cap the left/right imbalance so neither
+  // half of the board dominates.
+  const picked = [];
+  const occupied = new Set();
+  let leftN = 0, rightN = 0;
+  for (const c of candidates) {
+    if (picked.length >= FOOD_COUNT) break;
+    const [x, y] = c.xy;
+    const right = (x - GRID_X0) / PITCH >= cols / 2;
+    if (right ? rightN - leftN >= 6 : leftN - rightN >= 6) continue;
+    let clash = occupied.has(x + ',' + y);
+    for (const [dx, dy] of [[PITCH, 0], [-PITCH, 0], [0, PITCH], [0, -PITCH]]) {
+      if (occupied.has((x + dx) + ',' + (y + dy))) clash = true;
+    }
+    if (clash) continue;
+    occupied.add(x + ',' + y);
+    if (right) rightN++; else leftN++;
+    picked.push(c);
+  }
+  const n = picked.length;
 
   let css = ':root{--cf1:' + bright + ';--cf2:' + mid + '}';
   let rects = added;
   for (let i = 0; i < n; i++) {
-    const c = candidates[i];
+    const c = picked[i];
     const v = rnd() < 0.7 ? '--cf1' : '--cf2';
     const on = c.t.toFixed(2);
     const off = Math.min(c.t + 0.02, 100).toFixed(2);
@@ -249,5 +281,13 @@ function enrich({ file, bright, mid }, rnd) {
     + n + ' food, +' + (added.match(/<rect/g) || []).length + ' completed cells');
 }
 
+function hashSeed(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 // Same daily seed for both variants so light and dark show the identical route.
-for (const v of VARIANTS) enrich(v, mulberry32(dateSeed()));
+// Optional argv[3] overrides the daily seed for reproducible testing.
+const seed = process.argv[3] ? hashSeed(process.argv[3]) : dateSeed();
+for (const v of VARIANTS) enrich(v, mulberry32(seed));
