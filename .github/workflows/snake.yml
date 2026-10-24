@@ -50,5 +50,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           cp dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg assets/
-          git add assets/banner.gif assets/github-contribution-grid-snake.svg assets/github-contribution-grid-snake-dark.svg
+          sed -i -E "s/© ([0-9]{4})–[0-9]{4}/© \1–$(date -u +%Y)/" README.md
+          git add assets/banner.gif assets/github-contribution-grid-snake.svg assets/github-contribution-grid-snake-dark.svg README.md
           git diff --cached --quiet || (git commit -m "chore: regenerate snake animation" && git push)

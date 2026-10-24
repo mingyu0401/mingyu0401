@@ -111,6 +111,6 @@
   🟢 微信&nbsp;&nbsp;mingyu1145141
 </p>
 
-<p align="center">© 2022–2026 <b>明雨 Mingyu</b> · <i>Keep building, keep playing.</i></p>
+<p align="center">© 2013–2026 <b>明雨 Mingyu</b> · <i>Keep building, keep playing.</i></p>
 
 <p align="center"><sub>Made with ☕ · 💻 · ✨ | Powered by Qoder</sub></p>
