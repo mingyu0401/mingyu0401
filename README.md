@@ -6,11 +6,12 @@
   <a href="https://github.com/mingyu0401/EMOO/releases"><img alt="EMOO Release" src="https://img.shields.io/github/v/release/mingyu0401/EMOO?style=for-the-badge&label=EMOO%20Release&color=ff7fa5"/></a>
   <a href="https://github.com/mingyu0401/EMOO"><img alt="EMOO Stars" src="https://img.shields.io/github/stars/mingyu0401/EMOO?style=for-the-badge&color=f9a86c"/></a>
   <a href="https://github.com/mingyu0401"><img alt="Followers" src="https://img.shields.io/github/followers/mingyu0401?style=for-the-badge&color=6e82ff"/></a>
+  <a href="https://www.mingyu0401.com"><img alt="Website" src="https://img.shields.io/badge/Website-www.mingyu0401.com-6e82ff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
   <img alt="Top Language" src="https://img.shields.io/github/languages/top/mingyu0401/EMOO?style=for-the-badge&color=3ddc84"/>
 </p>
 
 <p align="center">
-  👋 Hi, I'm <b>明雨 (Mingyu)</b> —— 计算机科学与技术专业大四学生，Android 开发者，开源工具 <a href="https://github.com/mingyu0401/EMOO"><b>EMOO</b></a> 的作者。
+  👋 Hi, I'm <b>明雨 (Mingyu)</b> —— 计算机科学与技术专业大四学生，Android 开发者，开源工具 <a href="https://github.com/mingyu0401/EMOO"><b>EMOO</b></a> 与 <a href="https://github.com/mingyu0401/LiveXP"><b>LiveXP</b></a> 的作者。
 </p>
 
 ---
@@ -25,7 +26,7 @@
   🎮 <b>硬核玩家</b> —— 有较高游戏实力，PC 游玩 5000h+，手游游玩 4000h+。<br/>
   📂 <b>把工具做顺手</b> —— 相信好工具应该消除重复劳动，EMOO 就是这种想法的第一个孩子。<br/>
   🌱 <b>持续学习中</b> —— Kotlin / Compose / Node / 前端动画，哪块缺补哪块，永远在升级。<br/>
-  🤖 <b>AI 提效实践者</b> —— 熟练使用 Qoder 等 AI Agent 工具进行开发，让 AI 处理重复劳动，人专注设计与决策。
+  🤖 <b>AI 提效实践者</b> —— 熟练使用 Qoder、Codex 等 AI Agent 工具进行开发，让 AI 处理重复劳动，人专注设计与决策。
 </p>
 
 <h2 align="center">🏆 个人奖项</h2>
@@ -52,10 +53,10 @@
   <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white"/>
 </p>
 
-<h2 align="center">📦 主打项目 · <a href="https://github.com/mingyu0401/EMOO">EMOO</a></h2>
+<h2 align="center">📦 主打项目</h2>
 
 <p align="center">
-  <b>Android 图片分类、管理与「一键发送」工具</b><br/>
+  <a href="https://github.com/mingyu0401/EMOO"><b>EMOO</b></a> · Android 图片分类、管理与「一键发送」工具<br/>
   让杂乱的相册井井有条，把图片和文件一步直达微信、QQ。
 </p>
 
@@ -67,6 +68,21 @@
   <a href="https://github.com/mingyu0401/EMOO"><kbd>📦 源码仓库</kbd></a>
   <a href="https://github.com/mingyu0401/EMOO/releases"><kbd>⬇️ 下载 Release</kbd></a>
   <a href="mailto:mingyu0401@qq.com"><kbd>✉️ 反馈交流</kbd></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/mingyu0401/LiveXP"><b>LiveXP</b></a> · 为 QQ 补上「实况照片」的开源 Xposed 模块<br/>
+  在聊天界面识别实况图片，气泡加「实况」角标，点开大图自动播放内嵌视频。
+</p>
+
+- 🔍 <b>实况识别</b> —— 聊天里的实况图片自动检测，气泡右上角显示点环角标
+- ▶️ <b>实况播放</b> —— 点开实况图自动播放一次内嵌视频，播完回到照片，图标可重播
+- 🔄 <b>翻页续播</b> —— 相册左右滑动切到下一张实况图自动续播，拖动即停
+
+<p align="center">
+  <a href="https://github.com/mingyu0401/LiveXP"><kbd>📦 源码仓库</kbd></a>
+  <a href="https://github.com/mingyu0401/LiveXP/releases"><kbd>⬇️ 下载 Release</kbd></a>
+  <a href="https://github.com/mingyu0401/LiveXP/issues"><kbd>🐞 提交 Issue</kbd></a>
 </p>
 
 <h2 align="center">📊 GitHub 统计</h2>
@@ -89,6 +105,7 @@
 <h2 align="center">📬 联系我</h2>
 
 <p align="center">
+  🌐 网站&nbsp;&nbsp;<a href="https://www.mingyu0401.com">www.mingyu0401.com</a><br/>
   ✉️ 邮箱&nbsp;&nbsp;mingyu0401@qq.com<br/>
   💬 QQ&nbsp;&nbsp;1040132790<br/>
   🟢 微信&nbsp;&nbsp;mingyu1145141
