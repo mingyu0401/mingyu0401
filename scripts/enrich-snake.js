@@ -11,7 +11,7 @@ const VARIANTS = [
 const PATH_LEN = 400;   // the head walks this many steps, revisiting cells is expected
 const FOOD_COUNT = 200; // target; no-adjacency constraint caps the actual count
 const SNAKE_CYAN = '#00b3c4';
-const CYCLE_MS = 20640; // snk v3 default is 12900ms; scaled so the 400-step walk keeps the same head speed
+const CYCLE_MS = 20640; // our 400-step walk at the pace of snk's ~250-step route (snk sizes its own duration by route length)
 const PITCH = 16;
 const ROWS = 7;
 const GRID_X0 = 2; // cell rect x; head coord = rect coord - 2
@@ -172,7 +172,9 @@ function enrich({ file, bright, mid }, rnd) {
   svg = svg.replace(/(\.u\.u\d+\{)fill:var\(--c4\)/g, '$1fill:var(--cs)');
 
   // Slower: stretch the snk cycle so the whole walk takes ~1.6x longer.
-  svg = svg.replace(/12900ms/g, CYCLE_MS + 'ms');
+  // snk scales the animation duration with its own route length, so match any
+  // duration instead of hard-coding one.
+  svg = svg.replace(/\d+ms/g, CYCLE_MS + 'ms');
 
   // Complete the grid: snk omits not-yet-happened days in the last column.
   const have = new Set([...svg.matchAll(/<rect class="[^"]*" x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"/g)]
